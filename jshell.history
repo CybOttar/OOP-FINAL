@@ -1,0 +1,5 @@
+VAR#>git status
+VAR#>git add .\
+	git commit -m "Final project"\
+	git branch -M main\
+	git push -u origin main
