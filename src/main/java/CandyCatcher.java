@@ -1,8 +1,6 @@
-package candycatcher;
-
 import javax.swing.JFrame;
 
-public class Main {
+public class CandyCatcher {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Candy Catcher");
 
