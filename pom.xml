@@ -10,4 +10,14 @@
         <maven.compiler.release>27</maven.compiler.release>
         <exec.mainClass>CandyCatcher</exec.mainClass>
     </properties>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/sprites</directory>
+            </resource>
+        </resources>
+    </build>
 </project>

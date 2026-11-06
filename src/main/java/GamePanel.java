@@ -1,12 +1,30 @@
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
 public class GamePanel extends JPanel
         implements ActionListener, KeyListener {
+
+    private static final BufferedImage BACKDROP =
+            SpriteLoader.loadFromSpriteRoot("Backdrop.jpg");
+    private static final BufferedImage FROSTED_BACKDROP =
+            createFrostedBackdrop();
 
     private Player player;
     private ScoreManager scoreManager;
@@ -97,7 +115,7 @@ public class GamePanel extends JPanel
         } else if (type < 4) {
             objects.add(new SpecialCANDY(x, -30));
         } else {
-            objects.add(new Candy(x, -30));
+            objects.add(new Candy(x, -30, Candy.randomSpriteIndex(random)));
         }
     }
 
@@ -149,8 +167,9 @@ public class GamePanel extends JPanel
 
     private void drawMenu(Graphics2D g) {
 
-        g.setColor(new Color(255, 225, 240));
-        g.fillRect(0, 0, 800, 600);
+        drawBackdrop(g);
+        g.setColor(new Color(255, 225, 240, 185));
+        g.fillRect(0, 0, getWidth(), getHeight());
 
         g.setColor(new Color(220, 70, 140));
         g.setFont(new Font("Arial", Font.BOLD, 48));
@@ -172,8 +191,9 @@ public class GamePanel extends JPanel
 
     private void drawGame(Graphics2D g) {
 
-        g.setColor(new Color(255, 240, 248));
-        g.fillRect(0, 0, 800, 600);
+        drawBackdrop(g);
+        g.setColor(new Color(255, 244, 250, 70));
+        g.fillRect(0, 0, getWidth(), getHeight());
 
         // Score and lives
         g.setColor(new Color(210, 60, 130));
@@ -199,8 +219,9 @@ public class GamePanel extends JPanel
 
     private void drawGameOver(Graphics2D g) {
 
-        g.setColor(new Color(255, 225, 240));
-        g.fillRect(0, 0, 800, 600);
+        drawBackdrop(g);
+        g.setColor(new Color(255, 244, 250, 100));
+        g.fillRect(0, 0, getWidth(), getHeight());
 
         g.setColor(new Color(220, 70, 140));
         g.setFont(new Font("Arial", Font.BOLD, 48));
@@ -215,6 +236,37 @@ public class GamePanel extends JPanel
         g.setFont(new Font("Arial", Font.PLAIN, 20));
         g.drawString("Press R to Play Again", 300, 400);
         g.drawString("Press ESC for Main Menu", 290, 440);
+    }
+
+    private void drawBackdrop(Graphics2D g) {
+        double scale = Math.max(
+                (double) getWidth() / FROSTED_BACKDROP.getWidth(),
+                (double) getHeight() / FROSTED_BACKDROP.getHeight());
+        int width = (int) Math.ceil(FROSTED_BACKDROP.getWidth() * scale);
+        int height = (int) Math.ceil(FROSTED_BACKDROP.getHeight() * scale);
+        int x = (getWidth() - width) / 2;
+        int y = (getHeight() - height) / 2;
+        Graphics2D glass = (Graphics2D) g.create();
+        glass.drawImage(FROSTED_BACKDROP, x, y, width, height, null);
+        glass.setComposite(AlphaComposite.SrcOver.derive(0.16f));
+        glass.setColor(Color.WHITE);
+        glass.fillRect(0, 0, getWidth(), getHeight());
+        glass.dispose();
+    }
+
+    private static BufferedImage createFrostedBackdrop() {
+        float[] weights = {1, 4, 6, 4, 1};
+        float[] kernel = new float[weights.length * weights.length];
+        int index = 0;
+        for (float row : weights) {
+            for (float column : weights) {
+                kernel[index++] = row * column / 256f;
+            }
+        }
+
+        ConvolveOp blur = new ConvolveOp(
+                new Kernel(5, 5, kernel), ConvolveOp.EDGE_NO_OP, null);
+        return blur.filter(BACKDROP, null);
     }
 
     @Override
